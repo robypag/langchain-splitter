@@ -1,5 +1,5 @@
 {
-  "name": "@robypag/tokenizer",
+  "name": "@il_pagni/tokenizer",
   "version": "0.0.1",
   "description": "A small wrapper module to simplify files and buffers tokenization using langchain",
   "packageManager": "pnpm@7.0.0",
