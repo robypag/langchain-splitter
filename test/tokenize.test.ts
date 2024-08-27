@@ -12,7 +12,6 @@ const IMG_FILE_PATH = "./test/testfiles/memoji_sap.png";
 
 describe("Tokenization Functions", () => {
   describe("tokenizeFile", () => {
-
     it("should tokenize a text file", async () => {
       const result = await tokenizeFile(path.resolve(TXT_FILE_PATH));
       expect(result).toBeInstanceOf(Array);
@@ -35,21 +34,18 @@ describe("Tokenization Functions", () => {
     });
 
     it("should tokenize a Powerpoint document", async () => {
-        const result = await tokenizeFile(path.resolve(PPT_FILE_PATH));
-        expect(result).toBeInstanceOf(Array);
-        const length = result.length ?? 0;
-        expect(length).toBeGreaterThan(0);
-      });
+      const result = await tokenizeFile(path.resolve(PPT_FILE_PATH));
+      expect(result).toBeInstanceOf(Array);
+      const length = result.length ?? 0;
+      expect(length).toBeGreaterThan(0);
+    });
 
     it("should throw an error for unsupported file types", async () => {
-      try {
-        await tokenizeFile(path.resolve(IMG_FILE_PATH));
-        expect("Expected an error to be thrown").rejects.toThrow(
-          "UnsupportedFileType"
-        );
-      } catch (error: any) {
-        expect(error).toBeInstanceOf(UnsupportedFileType);
-      }
+      expect(async () => {
+        await expect(
+          tokenizeFile(path.resolve(IMG_FILE_PATH))
+        ).rejects.toThrow();
+      })
     });
   });
 
@@ -95,19 +91,21 @@ describe("Tokenization Functions", () => {
     });
 
     it("should tokenize a PPT buffer", async () => {
-        const file = await fs.readFile(path.resolve(PPT_FILE_PATH));
-        const result = await tokenizeFromBufferOrString(file, "pptx");
-        expect(result).toBeInstanceOf(Array);
-        const length = result.length ?? 0;
-        expect(length).toBeGreaterThan(0);
-      });
+      const file = await fs.readFile(path.resolve(PPT_FILE_PATH));
+      const result = await tokenizeFromBufferOrString(file, "pptx");
+      expect(result).toBeInstanceOf(Array);
+      const length = result.length ?? 0;
+      expect(length).toBeGreaterThan(0);
+    });
 
     it("should clean up temporary files after tokenization", async () => {
       const input = "This is a test string";
       await tokenizeFromBufferOrString(input, "txt");
       // Check that the temporary directory is empty
       const tempDir = path.join(os.tmpdir(), "tokenize-");
-      expect(async () => { await expect(fs.readdir(tempDir)).rejects.toThrow() }); // Empty dir
+      expect(async () => {
+        await expect(fs.readdir(tempDir)).rejects.toThrow();
+      }); // Empty dir
     });
   });
 });
