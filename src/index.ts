@@ -6,14 +6,43 @@ import {
   UnsupportedFileType,
 } from "./lib/utils/errors.js";
 import { tokenizeWordDocument } from "./lib/word.js";
-import { fileTypeFromFile, FileTypeResult, fileTypeFromBuffer } from "file-type";
+import { fileTypeFromFile, FileTypeResult } from "file-type";
 import { lookup } from "mime-types";
+import { Document } from "langchain/document";
+import { tokenizeCsvFile } from "./lib/csv.js";
+import { Readable } from "node:stream";
+import { tokenizePowerpointDocument } from "./lib/powerpoint.js";
+
+export interface DocumentChunk {
+  id?: string | undefined;
+  metadata: Record<string, any>;
+  content: string;
+}
+
+export type TokenizeFunction = (
+  filePath: string,
+  chunkSize: number,
+  chunkOverlap: number
+) => Promise<Document[]>;
+
+const fileHandlers: Record<string, TokenizeFunction> = {
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
+    tokenizeWordDocument,
+  "application/msword": tokenizeWordDocument,
+  "application/vnd.ms-powerpoint": tokenizePowerpointDocument,
+  "application/vnd.openxmlformats-officedocument.presentationml.presentation":
+    tokenizePowerpointDocument,
+  "application/pdf": tokenizePDF,
+  "text/csv": tokenizeCsvFile,
+};
+
+const defaultHandler: TokenizeFunction = tokenizePlaintextFile;
 
 export async function tokenizeFile(
   filePath: string,
   chunkOverlap: number = 200,
   chunkSize: number = 1000
-): Promise<string[]> {
+): Promise<DocumentChunk[]> {
   // Determine the mime type of the given filepath:
   let mimeType = lookup(filePath);
   if (mimeType === false) {
@@ -26,50 +55,39 @@ export async function tokenizeFile(
       mimeType = fileType.mime;
     }
   }
-  // Process based on mime type
-  if (
-    mimeType.startsWith(
-      "application/vnd.openxmlformats-officedocument.wordprocessingml"
-    ) ||
-    mimeType === "application/msword"
-  ) {
-    return await tokenizeWordDocument(filePath, chunkSize, chunkOverlap);
-  } else if (mimeType === "application/pdf") {
-    return await tokenizePDF(filePath, chunkSize, chunkOverlap);
-  } else if (mimeType.startsWith("text/")) {
-    return await tokenizePlaintextFile(filePath, chunkSize, chunkOverlap);
-  } else if (mimeType === "application/octet-stream") {
-    throw new UnsupportedFileType(
-      `The file at ${filePath} is of type application/octet-stream, which may not be a text file and cannot be safely processed.`
-    );
-  } else {
+
+  const handler =
+    fileHandlers[mimeType] ||
+    (mimeType.startsWith("text/") ? defaultHandler : null);
+  if (!handler) {
     throw new UnsupportedFileType(
       `The filetype provided at path ${filePath} is not supported (mime type: ${mimeType})`
     );
   }
+  const document = await handler(filePath, chunkSize, chunkOverlap);
+
+  // * Convert Langchain dependency to a common structure:
+  return document.map((doc: Document, index: number) => {
+    return {
+      id: doc.id ?? `idx-${index}`,
+      metadata: doc.metadata,
+      content: doc.pageContent,
+    };
+  });
 }
 
 export async function tokenizeFromBufferOrString(
-  content: Buffer | string,
+  content: Buffer | string | Readable,
+  extension: string,
   chunkOverlap: number = 200,
   chunkSize: number = 1000
-): Promise<string[]> {
+): Promise<DocumentChunk[]> {
   let tempFilePath: string | null = null;
-  let extension: string = 'txt';
   try {
-    // Check if the file is a pure text file or not by using a reversed approach.
-    // file-type will complain if the file is not a media type:
-    if (content instanceof Buffer) {
-        const fileType: FileTypeResult | undefined = await fileTypeFromBuffer(content);
-        if (fileType) {
-            extension = fileType.ext;
-        }
-    }
     // Create a temporary file
     tempFilePath = await writeTempFile(content, extension);
     // Tokenize the file using the existing tokenizeFile function
-    const tokens = await tokenizeFile(tempFilePath, chunkOverlap, chunkSize);
-    return tokens;
+    return await tokenizeFile(tempFilePath, chunkOverlap, chunkSize);
   } catch (error) {
     console.error("Error during tokenization:", error);
     throw error;
