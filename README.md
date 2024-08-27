@@ -38,8 +38,5 @@ This library currently only uses 2 of them:
 ## Who
 Me myself and I.
 
-# Contributions
-See [CONTRIBUTING.md](./CONTRIBUTING.md)
-
 # License
 See [LICENSE](./LICENSE)
