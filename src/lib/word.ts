@@ -24,6 +24,7 @@ export async function tokenizeWordDocument(
     const textSplitter = new RecursiveCharacterTextSplitter({
       chunkSize: chunkSize,
       chunkOverlap: chunkOverlap,
+
     });
 
     // Step 5: Split the document into chunks

@@ -3,18 +3,30 @@
   "version": "0.0.1",
   "description": "A small wrapper module to simplify files and buffers tokenization using langchain",
   "packageManager": "pnpm@7.0.0",
-  "exports": "./dist/index.js",
+  "exports": {
+    ".": {
+      "require": "./dist/index.js",
+      "import": "./dist/index.mjs",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "main": "./dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
   "files": [
-    "dist"
+    "dist",
+    "package.json"
   ],
   "type": "module",
   "scripts": {
     "build": "tsup",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
   },
-  "keywords": [],
+  "keywords": [
+    "Langchain",
+    "Tokenization",
+    "File Tokenization"
+  ],
   "author": "I551239 <r.pagni@sap.com>",
   "license": "Apache-2.0",
   "devDependencies": {
