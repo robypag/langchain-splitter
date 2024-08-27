@@ -1,0 +1,42 @@
+{
+  "name": "tokenizer",
+  "version": "0.0.1",
+  "description": "A small wrapper module to simplify files and buffers tokenization using langchain",
+  "packageManager": "pnpm@7.0.0",
+  "exports": "./dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "scripts": {
+    "build": "tsup",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
+  },
+  "keywords": [],
+  "author": "I551239 <r.pagni@sap.com>",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "@jest/globals": "^29.7.0",
+    "@types/jest": "^29.5.12",
+    "@types/node": "^22.5.0",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.2.5",
+    "ts-node": "^10.9.2",
+    "tsup": "^8.2.4",
+    "typescript": "^5.5.4"
+  },
+  "dependencies": {
+    "@langchain/community": "^0.2.31",
+    "@tsconfig/node20": "^20.1.4",
+    "@types/mime-types": "^2.1.4",
+    "@types/uuid": "^10.0.0",
+    "file-type": "^19.4.1",
+    "langchain": "^0.2.17",
+    "mammoth": "^1.8.0",
+    "mime-types": "^2.1.35",
+    "pdf-parse": "^1.1.1",
+    "uuid": "^10.0.0"
+  }
+}
