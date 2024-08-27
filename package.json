@@ -27,7 +27,11 @@
     "Tokenization",
     "File Tokenization"
   ],
-  "author": "I551239 <r.pagni@sap.com>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/robypag/tokenizer.git"
+  },
+  "author": "robypag25",
   "license": "Apache-2.0",
   "devDependencies": {
     "@jest/globals": "^29.7.0",
