@@ -1,5 +1,5 @@
 {
-  "name": "@il_pagni/tokenizer",
+  "name": "@robypag/langchain-splitter",
   "version": "0.1.2",
   "description": "A small wrapper module to simplify files and buffers tokenization using langchain",
   "packageManager": "pnpm@7.0.0",
@@ -32,9 +32,9 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/robypag/tokenizer.git"
+    "url": "https://github.com/robypag/langchain-splitter"
   },
-  "author": "robypag25",
+  "author": "Roberto Pagni <robypag@me.com>",
   "license": "Apache-2.0",
   "devDependencies": {
     "@jest/globals": "^29.7.0",
