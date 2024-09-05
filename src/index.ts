@@ -21,7 +21,7 @@ export interface DocumentChunk {
 export type TokenizeFunction = (
   filePath: string,
   chunkSize: number,
-  chunkOverlap: number
+  chunkOverlap: number,
 ) => Promise<Document[]>;
 
 const fileHandlers: Record<string, TokenizeFunction> = {
@@ -37,18 +37,25 @@ const fileHandlers: Record<string, TokenizeFunction> = {
 
 const defaultHandler: TokenizeFunction = tokenizePlaintextFile;
 
+const streamToBuffer = async (stream: Readable): Promise<Buffer> => {
+  const chunks = [];
+  for await (const chunk of stream) {
+    chunks.push(chunk);
+  }
+  return Buffer.concat(chunks);
+};
+
 export async function tokenizeFile(
   filePath: string,
   chunkOverlap: number = 200,
-  chunkSize: number = 1000
+  chunkSize: number = 1000,
 ): Promise<DocumentChunk[]> {
-
   // Determine the mime type of the given filepath:
   let mimeType = lookup(filePath);
   if (mimeType === false) {
-      throw new UnrecognizableFileType(
-        `The filetype provided at path ${filePath} is unrecognizable`
-      );
+    throw new UnrecognizableFileType(
+      `The filetype provided at path ${filePath} is unrecognizable`,
+    );
   }
 
   const handler =
@@ -56,7 +63,7 @@ export async function tokenizeFile(
     (mimeType.startsWith("text/") ? defaultHandler : null);
   if (!handler) {
     throw new UnsupportedFileType(
-      `The filetype provided at path ${filePath} is not supported (mime type: ${mimeType})`
+      `The filetype provided at path ${filePath} is not supported (mime type: ${mimeType})`,
     );
   }
   const document = await handler(filePath, chunkSize, chunkOverlap);
@@ -75,12 +82,15 @@ export async function tokenizeFromBufferOrString(
   content: Buffer | string | Readable,
   extension: string,
   chunkOverlap: number = 200,
-  chunkSize: number = 1000
+  chunkSize: number = 1000,
 ): Promise<DocumentChunk[]> {
   let tempFilePath: string | null = null;
   try {
+    // Convert streams to buffers:
+    const fileData: Buffer | string =
+      content instanceof Readable ? await streamToBuffer(content) : content;
     // Create a temporary file
-    tempFilePath = await writeTempFile(content, extension);
+    tempFilePath = await writeTempFile(fileData, extension);
     // Tokenize the file using the existing tokenizeFile function
     return await tokenizeFile(tempFilePath, chunkOverlap, chunkSize);
   } catch (error) {
