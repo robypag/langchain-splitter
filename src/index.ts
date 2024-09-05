@@ -6,7 +6,7 @@ import {
   UnsupportedFileType,
 } from "./lib/utils/errors.js";
 import { tokenizeWordDocument } from "./lib/word.js";
-import { fileTypeFromFile, FileTypeResult } from "file-type";
+//import { fileTypeFromFile, FileTypeResult } from "file-type";
 import { lookup } from "mime-types";
 import { Document } from "langchain/document";
 import { tokenizeCsvFile } from "./lib/csv.js";
@@ -44,9 +44,10 @@ export async function tokenizeFile(
   chunkSize: number = 1000
 ): Promise<DocumentChunk[]> {
   // Determine the mime type of the given filepath:
+  const { fileTypeFromFile } = await import('file-type');
   let mimeType = lookup(filePath);
   if (mimeType === false) {
-    let fileType: FileTypeResult | undefined = await fileTypeFromFile(filePath);
+    let fileType = await fileTypeFromFile(filePath);
     if (!fileType) {
       throw new UnrecognizableFileType(
         `The filetype provided at path ${filePath} is unrecognizable`
